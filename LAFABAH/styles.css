@@ -1,0 +1,268 @@
+:root {
+  --bg: #f7f4eb;
+  --ink: #142114;
+  --muted: #4e5f4f;
+  --panel: #fffef9;
+  --line: #dbd5c3;
+  --green: #0a7a3a;
+  --red: #be2e2e;
+  --gold: #d3a112;
+  --shadow: 0 18px 40px rgba(19, 33, 20, 0.1);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: radial-gradient(circle at 20% 0%, #efe8d6 0%, #f7f4eb 44%, #f5f1e6 100%);
+  color: var(--ink);
+  font-family: "Manrope", sans-serif;
+}
+
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 12;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.9rem 1.2rem;
+  background: rgba(255, 254, 248, 0.92);
+  border-bottom: 1px solid var(--line);
+  backdrop-filter: blur(7px);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand-mark {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  color: #fff;
+  background: conic-gradient(from 210deg, var(--green), var(--gold), var(--red), var(--green));
+}
+
+.brand small {
+  display: block;
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.site-nav {
+  display: flex;
+  gap: 1rem;
+}
+
+.site-nav a {
+  color: var(--ink);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.menu-btn {
+  display: none;
+}
+
+main {
+  width: min(1040px, 92%);
+  margin: 1.2rem auto 3rem;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Source Serif 4", serif;
+  margin-top: 0;
+}
+
+.hero {
+  padding: 2rem;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  background: linear-gradient(125deg, #fdf8eb 0%, #fffef9 45%, #f2f9f1 100%);
+  box-shadow: var(--shadow);
+}
+
+.hero h1 {
+  font-size: clamp(1.9rem, 4vw, 3.2rem);
+}
+
+.kicker {
+  margin-top: 0;
+  color: var(--green);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.82rem;
+}
+
+.hero-actions {
+  display: flex;
+  gap: 0.8rem;
+  flex-wrap: wrap;
+  margin-top: 1rem;
+}
+
+.btn {
+  display: inline-block;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn.primary {
+  background: var(--green);
+  color: #fff;
+}
+
+.btn.ghost {
+  border-color: var(--line);
+  color: var(--ink);
+}
+
+.panel {
+  margin-top: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 1.2rem;
+  background: var(--panel);
+  box-shadow: var(--shadow);
+}
+
+.split {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+ul,
+ol {
+  padding-left: 1.2rem;
+}
+
+.stats {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.stats div {
+  border: 1px dashed var(--line);
+  border-radius: 10px;
+  padding: 0.7rem;
+  min-width: 130px;
+}
+
+.stats strong {
+  display: block;
+  font-size: 1.25rem;
+  color: var(--red);
+}
+
+.spotlight {
+  background: linear-gradient(120deg, #f1f8f1, #fffef9);
+}
+
+.chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+}
+
+.chips span {
+  border: 1px solid #d2e4d2;
+  background: #eff7ef;
+  color: #255227;
+  border-radius: 999px;
+  padding: 0.45rem 0.8rem;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.contact-form {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.contact-form label {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.contact-form input,
+.contact-form textarea {
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  font: inherit;
+  padding: 0.6rem 0.75rem;
+  background: #fff;
+}
+
+.form-msg {
+  margin: 0;
+  color: var(--muted);
+}
+
+.site-footer {
+  text-align: center;
+  color: var(--muted);
+  padding: 1rem 0 2rem;
+}
+
+.reveal {
+  opacity: 0;
+  transform: translateY(18px);
+  transition: opacity 500ms ease, transform 500ms ease;
+}
+
+.reveal.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@media (max-width: 880px) {
+  .menu-btn {
+    display: inline-block;
+    border: 1px solid var(--line);
+    background: #fff;
+    border-radius: 10px;
+    min-height: 38px;
+    padding: 0.35rem 0.8rem;
+    font-weight: 700;
+  }
+
+  .site-nav {
+    position: absolute;
+    top: calc(100% + 1px);
+    left: 0;
+    right: 0;
+    padding: 0.8rem 1.2rem;
+    background: #fffef8;
+    border-bottom: 1px solid var(--line);
+    display: none;
+    flex-direction: column;
+  }
+
+  .site-nav.open {
+    display: flex;
+  }
+
+  .split {
+    grid-template-columns: 1fr;
+  }
+}
