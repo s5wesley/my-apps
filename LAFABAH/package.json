@@ -1,0 +1,12 @@
+{
+  "name": "wesley-mbarga-student-portal",
+  "version": "1.0.0",
+  "private": true,
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.888.0",
+    "@aws-sdk/lib-dynamodb": "^3.888.0"
+  },
+  "scripts": {
+    "start": "node server.js"
+  }
+}

@@ -3,20 +3,6 @@ const lookupForm = document.getElementById("lookupForm");
 const registrationMessage = document.getElementById("registrationMessage");
 const lookupResult = document.getElementById("lookupResult");
 const recordsList = document.getElementById("recordsList");
-const storageKey = "wesley-mbarga-students";
-
-function readStudents() {
-  try {
-    const raw = localStorage.getItem(storageKey);
-    return raw ? JSON.parse(raw) : [];
-  } catch (error) {
-    return [];
-  }
-}
-
-function saveStudents(students) {
-  localStorage.setItem(storageKey, JSON.stringify(students));
-}
 
 function normalizeEmail(email) {
   return email.trim().toLowerCase();
@@ -32,23 +18,32 @@ function formatDate(dateString) {
   });
 }
 
-function renderRecords() {
-  const students = readStudents().slice().reverse();
+function escapeHtml(value) {
+  return String(value)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
 
-  if (!students.length) {
+function renderRecords(students) {
+  const items = students.slice().reverse();
+
+  if (!items.length) {
     recordsList.innerHTML =
-      '<div class="empty-state">No students have been registered in this browser yet.</div>';
+      '<div class="empty-state">No students have been registered in the backend yet.</div>';
     return;
   }
 
-  recordsList.innerHTML = students
+  recordsList.innerHTML = items
     .map(
       (student) => `
         <article class="record-card">
-          <strong>${student.name}</strong>
-          <span>${student.email}</span>
+          <strong>${escapeHtml(student.name)}</strong>
+          <span>${escapeHtml(student.email)}</span>
           <div class="meta-row">
-            <span class="pill">${student.department}</span>
+            <span class="pill">${escapeHtml(student.department)}</span>
           </div>
           <span>Registered ${formatDate(student.registeredAt)}</span>
         </article>
@@ -68,18 +63,34 @@ function renderLookup(student) {
 
   lookupResult.innerHTML = `
     <article class="result-card">
-      <strong>${student.name}</strong>
-      <span>${student.email}</span>
+      <strong>${escapeHtml(student.name)}</strong>
+      <span>${escapeHtml(student.email)}</span>
       <div class="meta-row">
-        <span class="pill">${student.department}</span>
+        <span class="pill">${escapeHtml(student.department)}</span>
       </div>
       <span>Registration confirmed on ${formatDate(student.registeredAt)}</span>
     </article>
   `;
 }
 
+async function fetchStudents() {
+  const response = await fetch("/api/students");
+
+  if (!response.ok) {
+    throw new Error("Unable to fetch students.");
+  }
+
+  const data = await response.json();
+  return data.students || [];
+}
+
+async function refreshRecords() {
+  const students = await fetchStudents();
+  renderRecords(students);
+}
+
 if (registrationForm) {
-  registrationForm.addEventListener("submit", (event) => {
+  registrationForm.addEventListener("submit", async (event) => {
     event.preventDefault();
 
     const formData = new FormData(registrationForm);
@@ -87,42 +98,51 @@ if (registrationForm) {
       name: String(formData.get("name")).trim(),
       email: normalizeEmail(String(formData.get("email"))),
       department: String(formData.get("department")).trim(),
-      registeredAt: new Date().toISOString(),
     };
 
-    const students = readStudents();
-    const existingIndex = students.findIndex(
-      (entry) => normalizeEmail(entry.email) === student.email
-    );
+    try {
+      const response = await fetch("/api/students", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(student),
+      });
+      const data = await response.json();
 
-    if (existingIndex >= 0) {
-      students[existingIndex] = { ...students[existingIndex], ...student };
-      registrationMessage.textContent =
-        "This email was already registered. The student record has been updated.";
-    } else {
-      students.push(student);
-      registrationMessage.textContent =
-        "Student registered successfully. You can now verify the record in the lookup section.";
+      if (!response.ok) {
+        throw new Error(data.error || "Registration failed.");
+      }
+
+      registrationMessage.textContent = data.message;
+      renderLookup(data.student);
+      await refreshRecords();
+      registrationForm.reset();
+    } catch (error) {
+      registrationMessage.textContent = error.message;
     }
-
-    saveStudents(students);
-    renderRecords();
-    renderLookup(student);
-    registrationForm.reset();
   });
 }
 
 if (lookupForm) {
-  lookupForm.addEventListener("submit", (event) => {
+  lookupForm.addEventListener("submit", async (event) => {
     event.preventDefault();
     const lookupEmail = normalizeEmail(
       String(new FormData(lookupForm).get("lookupEmail") || "")
     );
-    const students = readStudents();
-    const foundStudent = students.find(
-      (student) => normalizeEmail(student.email) === lookupEmail
-    );
-    renderLookup(foundStudent);
+
+    try {
+      const response = await fetch(`/api/students?email=${encodeURIComponent(lookupEmail)}`);
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Lookup failed.");
+      }
+
+      renderLookup(data.student);
+    } catch (error) {
+      lookupResult.innerHTML = `<p>${escapeHtml(error.message)}</p>`;
+    }
   });
 }
 
@@ -140,4 +160,7 @@ const observer = new IntersectionObserver(
 
 document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
 
-renderRecords();
+refreshRecords().catch(() => {
+  recordsList.innerHTML =
+    '<div class="empty-state">Unable to load students. Start the backend server and refresh.</div>';
+});
