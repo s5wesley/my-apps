@@ -1,23 +1,128 @@
-const menuBtn = document.getElementById("menuBtn");
-const menu = document.getElementById("menu");
-const contactForm = document.getElementById("contactForm");
-const formMsg = document.getElementById("formMsg");
+const registrationForm = document.getElementById("registrationForm");
+const lookupForm = document.getElementById("lookupForm");
+const registrationMessage = document.getElementById("registrationMessage");
+const lookupResult = document.getElementById("lookupResult");
+const recordsList = document.getElementById("recordsList");
+const storageKey = "wesley-mbarga-students";
 
-if (menuBtn && menu) {
-  menuBtn.addEventListener("click", () => {
-    menu.classList.toggle("open");
-  });
+function readStudents() {
+  try {
+    const raw = localStorage.getItem(storageKey);
+    return raw ? JSON.parse(raw) : [];
+  } catch (error) {
+    return [];
+  }
+}
 
-  menu.querySelectorAll("a").forEach((link) => {
-    link.addEventListener("click", () => menu.classList.remove("open"));
+function saveStudents(students) {
+  localStorage.setItem(storageKey, JSON.stringify(students));
+}
+
+function normalizeEmail(email) {
+  return email.trim().toLowerCase();
+}
+
+function formatDate(dateString) {
+  return new Date(dateString).toLocaleString(undefined, {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
   });
 }
 
-if (contactForm) {
-  contactForm.addEventListener("submit", (event) => {
+function renderRecords() {
+  const students = readStudents().slice().reverse();
+
+  if (!students.length) {
+    recordsList.innerHTML =
+      '<div class="empty-state">No students have been registered in this browser yet.</div>';
+    return;
+  }
+
+  recordsList.innerHTML = students
+    .map(
+      (student) => `
+        <article class="record-card">
+          <strong>${student.name}</strong>
+          <span>${student.email}</span>
+          <div class="meta-row">
+            <span class="pill">${student.department}</span>
+          </div>
+          <span>Registered ${formatDate(student.registeredAt)}</span>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderLookup(student) {
+  if (!student) {
+    lookupResult.innerHTML = `
+      <p>No student record was found for that email address.</p>
+      <p>Please register first if you have not joined yet.</p>
+    `;
+    return;
+  }
+
+  lookupResult.innerHTML = `
+    <article class="result-card">
+      <strong>${student.name}</strong>
+      <span>${student.email}</span>
+      <div class="meta-row">
+        <span class="pill">${student.department}</span>
+      </div>
+      <span>Registration confirmed on ${formatDate(student.registeredAt)}</span>
+    </article>
+  `;
+}
+
+if (registrationForm) {
+  registrationForm.addEventListener("submit", (event) => {
     event.preventDefault();
-    formMsg.textContent = "Thank you. Your message has been recorded for follow-up.";
-    contactForm.reset();
+
+    const formData = new FormData(registrationForm);
+    const student = {
+      name: String(formData.get("name")).trim(),
+      email: normalizeEmail(String(formData.get("email"))),
+      department: String(formData.get("department")).trim(),
+      registeredAt: new Date().toISOString(),
+    };
+
+    const students = readStudents();
+    const existingIndex = students.findIndex(
+      (entry) => normalizeEmail(entry.email) === student.email
+    );
+
+    if (existingIndex >= 0) {
+      students[existingIndex] = { ...students[existingIndex], ...student };
+      registrationMessage.textContent =
+        "This email was already registered. The student record has been updated.";
+    } else {
+      students.push(student);
+      registrationMessage.textContent =
+        "Student registered successfully. You can now verify the record in the lookup section.";
+    }
+
+    saveStudents(students);
+    renderRecords();
+    renderLookup(student);
+    registrationForm.reset();
+  });
+}
+
+if (lookupForm) {
+  lookupForm.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const lookupEmail = normalizeEmail(
+      String(new FormData(lookupForm).get("lookupEmail") || "")
+    );
+    const students = readStudents();
+    const foundStudent = students.find(
+      (student) => normalizeEmail(student.email) === lookupEmail
+    );
+    renderLookup(foundStudent);
   });
 }
 
@@ -30,7 +135,9 @@ const observer = new IntersectionObserver(
       }
     });
   },
-  { threshold: 0.15 }
+  { threshold: 0.12 }
 );
 
-document.querySelectorAll(".reveal").forEach((el) => observer.observe(el));
+document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
+
+renderRecords();

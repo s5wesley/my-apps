@@ -1,16 +1,20 @@
-# LAFABAH Digital Foundation – Phase 1
+# Wesley Mbarga Institute of Learning Student Portal
 
-This is the Phase 1 foundational website for LAFABAH Houston.
+Frontend-only student portal for registering and verifying students.
 
-## Included in this phase
-- Organizational mission and legacy positioning
-- Governance credibility section
-- NextGen youth development spotlight
-- Project Polaris long-term initiative overview
-- Contact form placeholder and mobile-first navigation
+## Features
+- Poster-inspired UI based on the provided visual reference
+- Student registration with name, email, and department
+- Department options: `Dev`, `Stagging`, `Production`
+- Registration lookup by email
+- Recent entries panel backed by browser `localStorage`
 
 ## Run locally
-1. Open `index.html` directly in a browser, or
-2. Serve locally from this folder:
+1. Open [index.html](/Users/mac/Documents/New project/LAFABAH/index.html) in a browser, or
+2. Serve the folder locally:
    - `python3 -m http.server 8080`
    - Visit `http://localhost:8080`
+
+## Notes
+- This version stores records in the browser only.
+- If you want multi-user persistence, the next step is adding a backend and database.
